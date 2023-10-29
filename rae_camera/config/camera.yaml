@@ -35,35 +35,35 @@
       i_set_isp_scale: false
       i_width: 640
       i_height: 400
-      i_fps: 30.0
+      i_fps: 10.0
     right:
-      i_publish_topic: true
+      i_publish_topic: false
       i_output_isp: false
       i_board_socket_id: 2
       i_resolution: '800P'
       i_set_isp_scale: false
       i_width: 640
       i_height: 400
-      i_fps: 30.0
+      i_fps: 10.0
     stereo_front:
       i_align_depth: true
       i_board_socket_id: 2
-      i_publish_right_rect: false
+      i_publish_left_rect: true
       i_depth_preset: HIGH_ACCURACY
     stereo_back:
       i_align_depth: true
       i_board_socket_id: 4
-      i_publish_right_rect: false
+      i_publish_left_rect: true
       i_depth_preset: HIGH_ACCURACY
     left_back:
       i_resolution: '800P'
-      i_publish_topic: true
+      i_publish_topic: false
       i_output_isp: false
       i_board_socket_id: 3
       i_set_isp_scale: false
       i_width: 640
       i_height: 400
-      i_fps: 30.0
+      i_fps: 10.0
     right_back:
       i_publish_topic: false
       i_output_isp: false
@@ -72,4 +72,4 @@
       i_set_isp_scale: false
       i_width: 640
       i_height: 400
-      i_fps: 30.0
+      i_fps: 10.0

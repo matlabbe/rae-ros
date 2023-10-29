@@ -17,42 +17,31 @@ def launch_setup(context, *args, **kwargs):
         'config',
         'laserscan_kinect.yaml'
     )
+
     parameters = [
         {
             'frame_id': 'base_footprint',
-            'subscribe_rgb': True,
-            'subscribe_depth': True,
-            'subscribe_scan': True,
-            'subscribe_odom_info': False,
+            'subscribe_rgbd': True,
             'approx_sync': True,
-            'Grid/MaxGroundHeight': '0.1',
+            'Mem/BinDataKept': 'true',
+            'DbSqlite3/InMemory': 'false',
+            'Grid/NormalsSegmentation': 'false',
+            'Grid/MaxGroundHeight': '0.02',
+            'Grid/MaxObstacleHeight': '0.1',
             'Grid/FromDepth': True,
-            'Grid/RangeMin': '0.4',
-            'Grid/RangeMax': '8.0',
-            'Kp/RoiRatio': '0 0 0 0.3',
-            # 'Grid/3D': 'false',
-            'Grid/MaxGroundAngle': '60.0',
-            'Grid/FootprintHeight': '0.1',
-            'Reg/Force3DoF': 'true',
-            'Optimizer/Slam2D': True,
-            'Rtabmap/DetectionRate': '1.0',
+            'Grid/RangeMax': '2.0',
+            'Grid/3D': 'false',
             'Grid/RayTracing': 'true',
-            'RGBD/NeighborLinkRefining':'True',
-            'RGBD/LocalLoopDetectionTime': 'false',
-            'RGBD/OptimizeFromGraphEnd': 'false',
-            'RGBD/AngularUpdate': '0.01',
-            'RGBD/LinearUpdate': '0.01',
-#            'Reg/Strategy': '1',
-            'qos_scan': 2
+            'Reg/Force3DoF': 'true',
+            'RGBD/AngularUpdate': '0.05',
+            'RGBD/LinearUpdate': '0.05',
+            'qos': 1
         }
     ]
 
     remappings = [
-        #   ('imu', '/imu/data'),
-        ('odom', '/diff_controller/odom'),
-        ('rgb/image', name+'/right/image_raw'),
-        ('rgb/camera_info', name+'/right/camera_info'),
-        ('depth/image', name+'/stereo_front/image_raw'),
+        ('odom', '/odometry/filtered'),
+        ('rgbd_image', '/rae/front/rgbd_image'),
     ]
 
     return [
@@ -62,19 +51,29 @@ def launch_setup(context, *args, **kwargs):
             target_container=name+'_container',
             composable_node_descriptions=[
                 ComposableNode(
-                    package='image_proc',
-                    plugin='image_proc::RectifyNode',
-                    name='rectify_color_node',
-                    remappings=[('image', name+'/right/image_raw'),
-                                ('camera_info', name+'/right/camera_info'),
-                                ('image_rect', name+'/right/image_rect'),]
+                    package='rtabmap_sync',
+                    plugin='rtabmap_sync::RGBDSync',
+                    name='rgbd_sync',
+                    parameters=[{
+                        'approx_sync': True,
+                        'approx_sync_max_interval': 0.01,
+                        'qos': 1
+                    }],
+                    remappings=[
+                        ('rgb/image', name+'/left/image_rect'),
+                        ('rgb/camera_info', name+'/left/camera_info'),
+                        ('depth/image', name+'/stereo_front/image_raw'),
+                        ('rgbd_image', name+'/front/rgbd_image'),
+                        ('rgbd_image/compressed', name+'/front/rgbd_image/compressed'),
+                    ],
                 ),
                 ComposableNode(
                     package='rtabmap_slam',
                     plugin='rtabmap_slam::CoreWrapper',
+                    name='rtabmap',
                     parameters=parameters,
                     remappings=remappings,
-                    )
+                )
             ]),
 
         LoadComposableNodes(
@@ -105,16 +104,7 @@ def launch_setup(context, *args, **kwargs):
                             ('/debug_image', name+'/debug_image_back'),
                             ('/debug_image/compressed', name+'/debug_image_back/compressed')
                         ]
-                    ),
-                    ComposableNode(
-                        package='ira_laser_tools',
-                        name='laser_scan_multi_merger',
-                        plugin='ira_laser_tools::LaserscanMerger',
-                        parameters=[{'laserscan_topics': '/rae/scan_back /rae/scan_front',
-                                    'destination_frame': 'base_link',
-                                    'scan_destination_topic': '/scan'}
-                                    ]
-        ),
+                    )
             ]
         )  
         ]
