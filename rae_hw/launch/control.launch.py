@@ -37,6 +37,17 @@ def launch_setup(context, *args, **kwargs):
                 'rae_hw'), 'config', 'ekf.yaml')],
         ),
         Node(
+            condition=IfCondition(enable_localization),
+            package='imu_filter_madgwick',
+            executable='imu_filter_madgwick_node', 
+            name='imu_filter_madgwick',
+            output='screen',
+            parameters=[{'use_mag': False, 
+                         'world_frame':'enu', 
+                         'publish_tf':False}],
+            remappings=[('imu/data_raw', '/rae/imu/data'), ('imu/data', '/rae/imu/data_filtered')]
+        ),
+        Node(
             package='controller_manager',
             executable='ros2_control_node',
             parameters=[robot_description, controller],
